@@ -34,14 +34,19 @@ except Exception as exc:  # red caída, URL inválida, etc.
 # ---------------------------------------------------------------- Filtros
 st.sidebar.header("Filtros")
 
+def in_selection(col: pd.Series, selected: list) -> pd.Series:
+    """Sin selección = sin filtro (incluye todos los valores)."""
+    return col.notna() if not selected else col.isin(selected)
+
+
 classes = sorted(raw["pclass"].dropna().unique())
-sel_class = st.sidebar.multiselect("Clase", classes, default=classes)
+sel_class = st.sidebar.multiselect("Clase", classes, placeholder="Todas")
 
 sexes = sorted(raw["sex"].dropna().unique())
-sel_sex = st.sidebar.multiselect("Sexo", sexes, default=sexes)
+sel_sex = st.sidebar.multiselect("Sexo", sexes, placeholder="Todos")
 
 ports = sorted(raw["embark_town"].dropna().unique())
-sel_port = st.sidebar.multiselect("Puerto de embarque", ports, default=ports)
+sel_port = st.sidebar.multiselect("Puerto de embarque", ports, placeholder="Todos")
 include_na_port = st.sidebar.checkbox("Incluir puerto desconocido", value=True)
 
 age_min, age_max = float(raw["age"].min()), float(raw["age"].max())
@@ -51,10 +56,12 @@ include_na_age = st.sidebar.checkbox("Incluir edad desconocida", value=True)
 fare_max = float(raw["fare"].max())
 sel_fare = st.sidebar.slider("Tarifa", 0.0, fare_max, (0.0, fare_max), step=1.0)
 
+st.sidebar.caption("Deja un filtro vacío para incluir todos sus valores.")
+
 mask = (
-    raw["pclass"].isin(sel_class)
-    & raw["sex"].isin(sel_sex)
-    & (raw["embark_town"].isin(sel_port) | (include_na_port & raw["embark_town"].isna()))
+    in_selection(raw["pclass"], sel_class)
+    & in_selection(raw["sex"], sel_sex)
+    & (in_selection(raw["embark_town"], sel_port) | (include_na_port & raw["embark_town"].isna()))
     & (raw["age"].between(*sel_age) | (include_na_age & raw["age"].isna()))
     & raw["fare"].between(*sel_fare)
 )
