@@ -49,12 +49,12 @@ ports = sorted(raw["embark_town"].dropna().unique())
 sel_port = st.sidebar.multiselect("Puerto de embarque", ports, placeholder="Todos")
 include_na_port = st.sidebar.checkbox("Incluir puerto desconocido", value=True)
 
-age_min, age_max = float(raw["age"].min()), float(raw["age"].max())
-sel_age = st.sidebar.slider("Edad", age_min, age_max, (age_min, age_max), step=1.0)
+age_min, age_max = int(np.floor(raw["age"].min())), int(np.ceil(raw["age"].max()))
+sel_age = st.sidebar.slider("Edad", age_min, age_max, (age_min, age_max), help="Las edades menores a 1 año son bebés (ej. 0.42 = 5 meses).")
 include_na_age = st.sidebar.checkbox("Incluir edad desconocida", value=True)
 
-fare_max = float(raw["fare"].max())
-sel_fare = st.sidebar.slider("Tarifa", 0.0, fare_max, (0.0, fare_max), step=1.0)
+fare_max = int(np.ceil(raw["fare"].max()))
+sel_fare = st.sidebar.slider("Tarifa", 0, fare_max, (0, fare_max), help="En libras esterlinas de 1912. El máximo (512.33) lo pagaron 3 pasajeros de 1ª clase.")
 
 st.sidebar.caption("Deja un filtro vacío para incluir todos sus valores.")
 
